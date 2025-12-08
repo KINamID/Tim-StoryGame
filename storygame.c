@@ -27,7 +27,6 @@ void setColor(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
 #else
-    // Di Linux/Mac bisa diganti dengan ANSI escape code
     printf("\033[0;%dm", color);
 #endif
 }
@@ -79,7 +78,6 @@ void inputNama() {
     printf("Masukkan nama detektifmu: ");
     resetColor();
     fgets(playerName, sizeof(playerName), stdin);
-    // hapus newline di akhir
     size_t len = strlen(playerName);
     if (len > 0 && playerName[len - 1] == '\n') {
         playerName[len - 1] = '\0';
@@ -118,12 +116,10 @@ int puzzle(int id) {
             slowPrint("Petunjuk di layar: 'Orang yang selalu kau cari'.\n", 20);
             printf("Masukkan password (nama, huruf besar-kecil tidak masalah): ");
             fgets(jawabanText, sizeof(jawabanText), stdin);
-            // hapus newline
             {
                 size_t len = strlen(jawabanText);
                 if (len > 0 && jawabanText[len - 1] == '\n') jawabanText[len - 1] = '\0';
             }
-            // ubah ke huruf besar semua utk dibandingkan
             for (int i = 0; jawabanText[i]; i++) {
                 if (jawabanText[i] >= 'a' && jawabanText[i] <= 'z')
                     jawabanText[i] = jawabanText[i] - 'a' + 'A';
@@ -175,7 +171,7 @@ int puzzle(int id) {
 
 void chapter1() {
     setColor(11);
-    printf("\n============== CHAPTER 1: AWAL MISTERI ==============\n");
+    printf("\n============== CHAPTER 1: AWAL MISTERI ELOK ==============\n");
     resetColor();
     slowPrint("Kota Graybridge sedang merayakan ulang tahun ke-20 Akademi Kepolisian.\n", 15);
     slowPrint("Namun di tengah keramaian, sebuah pesan misterius muncul di kantor polisi...\n\n", 15);
