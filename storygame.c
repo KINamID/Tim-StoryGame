@@ -526,8 +526,8 @@ int main()
 {
     setColor(13);
     printf("=====================================================\n");
-    printf("                 THE GENIUS - TEXT GAME              \n");
-    printf("            Tugas UAS Dasar-Dasar Pemrograman        \n");
+    printf("        THE GENIUS -  Text-Based Detective Game      \n");
+    printf("            Tugas Dasar-Dasar Pemrograman            \n");
     printf("=====================================================\n\n");
     resetColor();
 
