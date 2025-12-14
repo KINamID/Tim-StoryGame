@@ -527,7 +527,7 @@ int main()
     setColor(13);
     printf("=====================================================\n");
     printf("        THE GENIUS -  Text-Based Detective Game      \n");
-    printf("            Tugas Dasar-Dasar Pemrograman            \n");
+    printf("            Tugas Dasar-Dasar Pemograman             \n");
     printf("=====================================================\n\n");
     resetColor();
 
