@@ -8,8 +8,9 @@
 #endif
 
 #define MAX_CLUE 10
-#define MAX_LEN  120
+#define MAX_LEN 75
 
+// VARIABEL
 char playerName[50];
 char clues[MAX_CLUE][MAX_LEN];
 int clueCount = 0;
@@ -17,21 +18,26 @@ int solved = 0;
 int failed = 0;
 int totalPuzzles = 3;
 
-void clearInputBuffer() {
+void clearInputBuffer()
+{
     int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
+    while ((c = getchar()) != '\n' && c != EOF)
+    {
+    }
 }
 
-void setColor(int color) {
-#ifdef _WIN32
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color);
-#else
-    printf("\033[0;%dm", color);
-#endif
+void setColor(int c)
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), c);
 }
 
-void resetColor() {
+void clearScreen()
+{
+    system("cls");
+}
+
+void resetColor()
+{
 #ifdef _WIN32
     setColor(7);
 #else
@@ -43,276 +49,482 @@ void slowPrint(const char *text, int delayMs) {
     for (int i = 0; text[i] != '\0'; i++) {
         putchar(text[i]);
         fflush(stdout);
+        
+        if (text[i] == ' ') {
 #ifdef _WIN32
-        Sleep(delayMs);
+            Sleep(delayMs * 3); 
 #else
-        usleep(delayMs * 1000);
+            usleep(delayMs * 3 * 1000);
 #endif
+        } else {
+#ifdef _WIN32
+            Sleep(delayMs);
+#else
+            usleep(delayMs * 1000);
+#endif
+        }
     }
 }
 
-void addClue(const char *text) {
-    if (clueCount < MAX_CLUE) {
+void addClue(const char *text)
+{
+    if (clueCount < MAX_CLUE)
+    {
         strncpy(clues[clueCount], text, MAX_LEN - 1);
         clues[clueCount][MAX_LEN - 1] = '\0';
         clueCount++;
     }
 }
 
-void showClue() {
+void showClue()
+{
     setColor(11);
     printf("\n========== CLUE YANG SUDAH DIDAPAT ==========\n");
     resetColor();
-    if (clueCount == 0) {
+    if (clueCount == 0)
+    {
         printf("Belum ada clue yang kamu kumpulkan.\n");
-    } else {
-        for (int i = 0; i < clueCount; i++) {
+    }
+    else
+    {
+        for (int i = 0; i < clueCount; i++)
+        {
             printf("%d. %s\n", i + 1, clues[i]);
         }
     }
     printf("=============================================\n\n");
 }
 
-void inputNama() {
-    setColor(10);
-    printf("Masukkan nama detektifmu: ");
-    resetColor();
-    fgets(playerName, sizeof(playerName), stdin);
-    size_t len = strlen(playerName);
-    if (len > 0 && playerName[len - 1] == '\n') {
-        playerName[len - 1] = '\0';
+void promptShowClue() {
+    char lihat;
+    int validInput = 0;
+    
+    while (!validInput) {
+        printf("\nIngin melihat semua clue yang sudah kamu kumpulkan? (y/n): ");
+        scanf(" %c", &lihat);
+        clearInputBuffer();
+        
+        if (lihat == 'y' || lihat == 'Y') {
+            showClue();
+            validInput = 1;
+        } else if (lihat == 'n' || lihat == 'N') {
+            printf("Baik, lanjut ke cerita berikutnya...\n");
+            validInput = 1;
+        } else {
+            setColor(12);
+            printf("Input tidak valid! Silakan masukkan 'y' untuk ya atau 'n' untuk tidak.\n");
+            resetColor();
+        }
     }
 }
 
-int puzzle(int id) {
+void inputNama()
+{
+    int valid = 0;
+
+    while (!valid)
+    {
+        setColor(10);
+        printf("Masukkan nama detektifmu: ");
+        resetColor();
+
+        fgets(playerName, sizeof(playerName), stdin);
+
+        // hapus newline
+        size_t len = strlen(playerName);
+        if (len > 0 && playerName[len - 1] == '\n')
+            playerName[len - 1] = '\0';
+
+        // validasi: cek apakah ada angka
+        valid = 1;  // anggap valid dulu
+        for (int i = 0; playerName[i] != '\0'; i++)
+        {
+            if (playerName[i] >= '0' && playerName[i] <= '9')
+            {
+                setColor(12);
+                printf("Nama tidak boleh mengandung angka! Coba lagi.\n\n");
+                resetColor();
+                valid = 0; // invalid
+                break;
+            }
+        }
+
+        // jika hanya enter
+        if (strlen(playerName) == 0)
+        {
+            setColor(12);
+            printf("Nama tidak boleh kosong! Coba lagi.\n\n");
+            resetColor();
+            valid = 0;
+        }
+    }
+}
+
+
+void puzzleGudang()
+{
+    int pass;
+
+    setColor(14);
+    slowPrint("\nSebuah gembok tua tergantung...\n", 75);
+    slowPrint("Tertulis: 'Jumlah sisi pada dua benda yang identik'\n", 75);
+    slowPrint("Hint: Dadu?\n", 75);
+
+    setColor(15);
+    printf("Masukkan password: ");
+    scanf("%d", &pass);
+
+    if (pass == 12)
+    {
+        setColor(10);
+        slowPrint("Gembok terbuka!\n", 75);
+        solved++;
+    }
+    else
+    {
+        setColor(12);
+        slowPrint("Password salah. Kamu gagal membuka gembok.\n", 75);
+        failed++;
+    }
+}
+
+void puzzlePerpus()
+{
+    int pass;
+
+    setColor(14);
+    slowPrint("\nDi rak buku, kamu menemukan sebuah soal matematika:\n", 75);
+    slowPrint("Diketahui:\n", 75);
+    slowPrint("f(x) = 2x + 8\n", 120);
+    slowPrint("g(x) = 4x - 8\n", 120);
+    slowPrint("Tentukan nilai dari (f o g)(3)\n", 100);
+    slowPrint("Hint: f(g(x))\n", 100);
+
+    setColor(15);
+    printf("Masukkan Jawaban (angka): ");
+    scanf("%d", &pass);
+
+    if (pass == 16)
+    {
+        setColor(10);
+        slowPrint("Rak bergerak terbuka...\n", 75);
+        solved++;
+    }
+    else
+    {
+        setColor(12);
+        slowPrint("Jawaban salah.\n", 75);
+        failed++;
+    }
+}
+
+void puzzleLorong()
+{
+    char w1[10], w2[10], w3[10];
+
+    // Jawaban benar
+    char *c1 = "RED";
+    char *c2 = "BLUE";
+    char *c3 = "YELLOW";
+
+    setColor(15);
+    slowPrint("\nKamu melihat seseorang berlari ke lorong gelap...\n", 75);
+    slowPrint("Tiba-tiba tulisan samar muncul di dinding!\n\n", 75);
+
+    // Tampilkan kalimat dengan warna disisipkan
+    setColor(15);
+    slowPrint("\"Dia menuju ", 75);
+    setColor(12);
+    slowPrint("RED", 75);
+    setColor(15);
+    slowPrint(" ke arah utara lalu ", 75);
+    setColor(9);
+    slowPrint("BLUE", 75);
+    setColor(15);
+    slowPrint(" menghilang ke tikungan ", 75);
+    setColor(14);
+    slowPrint("YELLOW", 75);
+    setColor(15);
+    slowPrint("...\"\n", 75);
+
+    Sleep(2200);   // tampil 2 detik
+    clearScreen(); // hilangkan petunjuk
+
+    setColor(14);
+    slowPrint("Tulisan itu menghilang...\n", 75);
+    slowPrint("Apa tiga warna yang kamu lihat?\n", 75);
+    slowPrint("Masukkan berurutan\n", 75);
+
+    setColor(15);
+    printf("> ");
+    scanf("%s %s %s", w1, w2, w3);
+
+    if (strcmp(w1, c1) == 0 &&
+        strcmp(w2, c2) == 0 &&
+        strcmp(w3, c3) == 0)
+    {
+        setColor(10);
+        slowPrint("\nBenar! Pintu listrik terbuka perlahan...\n", 75);
+        solved++;
+    }
+    else
+    {
+        setColor(12);
+        slowPrint("\nSalah! Kamu tidak mengingatnya dengan benar.\n", 75);
+        failed++;
+    }
+}
+
+int puzzle(int id)
+{
     int jawabanAngka;
     char jawabanText[50];
 
-    switch (id) {
-        case 1:
-            slowPrint("\n[Puzzle 1] Johan meninggalkan kode angka di dinding:\n", 20);
-            slowPrint("  3  6  9  12  ?\n", 40);
-            printf("Tebak angka berikutnya: ");
-            scanf("%d", &jawabanAngka);
-            clearInputBuffer();
-            if (jawabanAngka == 15) {
-                setColor(10);
-                printf("Benar! Kamu menyadari itu adalah deret kelipatan 3.\n");
-                resetColor();
-                addClue("Deret angka -> Johan suka pola matematika sederhana namun menipu.");
-                solved++;
-                return 1;
-            } else {
-                setColor(12);
-                printf("Salah. Johan mengirim pesan:\n");
-                resetColor();
-                slowPrint("\"Bahkan kakakmu pun bisa melakukannya lebih baik.\"\n", 25);
-                failed++;
-                return 0;
-            }
-
-        case 2:
-            slowPrint("\n[Puzzle 2] Di salah satu lokasi, kamu menemukan laptop terkunci.\n", 20);
-            slowPrint("Petunjuk di layar: 'Orang yang selalu kau cari'.\n", 20);
-            printf("Masukkan password (nama, huruf besar-kecil tidak masalah): ");
-            fgets(jawabanText, sizeof(jawabanText), stdin);
-            {
-                size_t len = strlen(jawabanText);
-                if (len > 0 && jawabanText[len - 1] == '\n') jawabanText[len - 1] = '\0';
-            }
-            for (int i = 0; jawabanText[i]; i++) {
-                if (jawabanText[i] >= 'a' && jawabanText[i] <= 'z')
-                    jawabanText[i] = jawabanText[i] - 'a' + 'A';
-            }
-            if (strcmp(jawabanText, "NINA") == 0) {
-                setColor(10);
-                printf("Password benar. File rahasia terbuka...\n");
-                resetColor();
-                addClue("Nama 'Nina Fort' terus muncul di setiap berkas Johan.");
-                solved++;
-                return 1;
-            } else {
-                setColor(12);
-                printf("Password salah. File terhapus otomatis.\n");
-                resetColor();
-                failed++;
-                return 0;
-            }
-
-        case 3:
-            slowPrint("\n[Puzzle 3] Kamu dan Michael mengejar Johan menuju stasiun Graybridge.\n", 20);
-            slowPrint("Di tembok, ada pesan: 'Tiga jalan, hanya satu yang selamat.'\n", 20);
-            printf("Pilih jalur:\n");
-            printf("1. Lorong kiri yang gelap\n");
-            printf("2. Tangga menuju atap\n");
-            printf("3. Terowongan service sempit\n");
-            printf("Pilihanmu (1/2/3): ");
-            scanf("%d", &jawabanAngka);
-            clearInputBuffer();
-            if (jawabanAngka == 2) {
-                setColor(10);
-                printf("Kamu memilih atap. Dari sana kamu melihat pola lampu yang membentuk koordinat.\n");
-                resetColor();
-                addClue("Koordinat persembunyian Johan terlihat dari atap stasiun.");
-                solved++;
-                return 1;
-            } else {
-                setColor(12);
-                printf("Pilihanmu membuat pengejaran melambat. Johan semakin jauh.\n");
-                resetColor();
-                failed++;
-                return 0;
-            }
-
-        default:
+    switch (id)
+    {
+    case 1:
+        setColor(14);
+        slowPrint("\nJohan meninggalkan kode angka di dinding:\n", 75);
+        slowPrint("  3  6  9  12  ?\n", 75);
+        resetColor();
+        printf("Tebak angka berikutnya: ");
+        scanf("%d", &jawabanAngka);
+        clearInputBuffer();
+        if (jawabanAngka == 15)
+        {
+            setColor(10);
+            printf("Benar! Kamu menyadari itu adalah deret kelipatan 3.\n");
+            resetColor();
+            addClue("Deret angka -> Johan suka pola matematika sederhana namun menipu.");
+            solved++;
+            return 1;
+        }
+        else
+        {
+            setColor(12);
+            printf("Salah. Johan mengirim pesan:\n");
+            resetColor();
+            slowPrint("\"Bahkan kakakmu pun bisa melakukannya lebih baik.\"\n", 100);
+            failed++;
             return 0;
+        }
+
+    case 2:
+        setColor(14);
+        slowPrint("\nDi salah satu lokasi, kamu menemukan laptop terkunci.\n", 75);
+        slowPrint("Petunjuk di layar: 'Orang yang selalu kau cari'.\n", 120);
+        resetColor();
+        printf("Masukkan password (nama, huruf besar-kecil tidak masalah): ");
+        fgets(jawabanText, sizeof(jawabanText), stdin);
+        // hapus newline
+        {
+            size_t len = strlen(jawabanText);
+            if (len > 0 && jawabanText[len - 1] == '\n')
+                jawabanText[len - 1] = '\0';
+        }
+        // ubah ke huruf besar semua utk dibandingkan
+        for (int i = 0; jawabanText[i]; i++)
+        {
+            if (jawabanText[i] >= 'a' && jawabanText[i] <= 'z')
+                jawabanText[i] = jawabanText[i] - 'a' + 'A';
+        }
+        if (strcmp(jawabanText, "NINA") == 0)
+        {
+            setColor(10);
+            printf("Password benar. File rahasia terbuka...\n");
+            resetColor();
+            addClue("Nama 'Nina Fort' terus muncul di setiap berkas Johan.");
+            solved++;
+            return 1;
+        }
+        else
+        {
+            setColor(12);
+            printf("Password salah. File terhapus otomatis.\n");
+            resetColor();
+            failed++;
+            return 0;
+        }
+
+    case 3:
+        slowPrint("\nKamu dan Michael mengejar Johan menuju stasiun Graybridge.\n", 75);
+        slowPrint("Di tembok, ada pesan: 'Tiga jalan, hanya satu yang selamat.'\n", 75);
+        setColor(14);
+        printf("Pilih jalur:\n");
+        printf("1. Lorong kiri yang gelap\n");
+        printf("2. Tangga menuju atap\n");
+        printf("3. Terowongan service sempit\n");
+        resetColor();
+        printf("Pilihanmu (1/2/3): ");
+        scanf("%d", &jawabanAngka);
+        clearInputBuffer();
+        if (jawabanAngka == 2)
+        {
+            setColor(10);
+            printf("Kamu memilih atap. Dari sana kamu melihat pola lampu yang membentuk koordinat.\n");
+            resetColor();
+            addClue("Koordinat persembunyian Johan terlihat dari atap stasiun.");
+            solved++;
+            return 1;
+        }
+        else
+        {
+            setColor(12);
+            printf("Pilihanmu membuat pengejaran melambat. Johan semakin jauh.\n");
+            resetColor();
+            failed++;
+            return 0;
+        }
+
+    default:
+        return 0;
     }
 }
 
-void chapter1() {
-    setColor(11);
-    printf("\n============== CHAPTER 1: AWAL MISTERI ELOK ==============\n");
+void chapter1()
+{
+    setColor(13);
+    printf("\n============== CHAPTER 1: AWAL MISTERI ==============\n");
     resetColor();
-    slowPrint("Kota Graybridge sedang merayakan ulang tahun ke-20 Akademi Kepolisian.\n", 15);
-    slowPrint("Namun di tengah keramaian, sebuah pesan misterius muncul di kantor polisi...\n\n", 15);
+    slowPrint("Kota Graybridge sedang merayakan ulang tahun ke-20 Akademi Kepolisian.\n", 75);
+    slowPrint("Namun di tengah keramaian, sebuah pesan misterius muncul di kantor polisi...\n\n", 75);
 
-    slowPrint("\"Waktu kalian hampir habis. Selesaikan teka-teki ini, atau Graybridge kehilangan nyawanya.\"\n", 20);
-    slowPrint("Pesan itu ditandatangani oleh seseorang bernama sandi: 'Johan'.\n\n", 20);
+    slowPrint("\"Waktu kalian hampir habis. Selesaikan teka-teki ini, atau Graybridge kehilangan nyawanya.\"\n", 120);
+    slowPrint("Pesan itu ditandatangani oleh seseorang bernama sandi: 'Johan'.\n\n", 100);
 
-    slowPrint("Kamu, detektif baru bernama ", 15);
-    slowPrint(playerName, 15);
-    slowPrint(", dipanggil bersama partner-mu, Michael.\n\n", 15);
+    slowPrint("Kamu detektif baru bernama ", 75);
+    slowPrint(playerName, 120);
+    slowPrint(", dipanggil bersama partner-mu Michael.\n\n", 120);
 
-    slowPrint("Michael: \"Kelihatannya si Johan ini bukan orang biasa. Lihat kodenya di TKP pertama.\"\n", 15);
+    slowPrint("Michael: \"Kelihatannya si Johan ini bukan orang biasa. Lihat kodenya di TKP pertama.\"\n", 100);
 
     puzzle(1);
 
-    char lihat;
-    printf("\nIngin melihat semua clue yang sudah kamu kumpulkan? (y/n): ");
-    scanf(" %c", &lihat);
-    clearInputBuffer();
-    if (lihat == 'y' || lihat == 'Y') {
-        showClue();
-    }
+    promptShowClue();
 }
 
-void chapter2() {
+void chapter2()
+{
     int pilihan;
-    setColor(11);
+    setColor(13);
     printf("\n============== CHAPTER 2: PETUNJUK MASA LALU ==============\n");
     resetColor();
 
-    slowPrint("Beberapa hari kemudian, Johan mulai menyebut nama yang sangat kamu kenal...\n", 15);
-    slowPrint("\"Nina Fort\" - nama kakakmu yang hilang 10 tahun lalu.\n\n", 20);
+    slowPrint("Beberapa hari kemudian, Johan mulai menyebut nama yang sangat kamu kenal...\n", 75);
+    slowPrint("\"Nina Fort\" - nama kakakmu yang hilang 10 tahun lalu.\n\n", 120);
 
-    slowPrint("Michael: \"Kenapa dia tahu soal Nina? Ini sudah pribadi, ", 15);
-    slowPrint(playerName, 15);
-    slowPrint(".\"\n\n", 15);
+    slowPrint("Michael: \"Kenapa dia tahu soal Nina? Ini sudah pribadi, ", 120);
+    slowPrint(playerName, 75);
+    slowPrint(".\"\n\n", 75);
 
-    slowPrint("Kamu dan Michael memutuskan untuk menyelidiki beberapa lokasi:\n", 15);
-    printf("1. Gudang tua di pinggir kota\n");
-    printf("2. Perpustakaan Universitas Graybridge\n");
-    printf("3. Lorong bawah tanah stasiun Graybridge\n");
-    printf("Pilih lokasi pertama yang ingin kamu datangi (1-3): ");
+    setColor(15);
+    slowPrint("\nMuncul beberapa lokasi investigasi:\n", 75);
+    setColor(14);
+    slowPrint("1. Gudang Tua\n", 75);
+    slowPrint("2. Perpustakaan Universitas\n", 75);
+    slowPrint("3. Lorong bawah tanah stasiun Graybridge\n", 75);
+
+    setColor(15);
+    printf("\nYour choice: ");
     scanf("%d", &pilihan);
-    clearInputBuffer();
+    clearScreen();
 
-    switch (pilihan) {
-        case 1:
-            slowPrint("\nKamu memasuki gudang tua yang berdebu.\n", 15);
-            slowPrint("Di sudut ruangan, ada papan tulis penuh angka dan nama 'Nina'.\n", 15);
-            break;
-        case 2:
-            slowPrint("\nDi perpustakaan, kamu menemukan rak khusus tentang kriptografi dan kode rahasia.\n", 15);
-            slowPrint("Sebuah buku terbuka dengan catatan tangan bertuliskan 'Fort Project'.\n", 15);
-            break;
-        case 3:
-        default:
-            slowPrint("\nLorong bawah tanah dipenuhi suara langkah bergema.\n", 15);
-            slowPrint("Di dinding, ada poster lama Akademi Kepolisian dengan tanda silang pada foto angkatan Nina.\n", 15);
-            break;
+    switch (pilihan)
+    {
+    case 1:
+        puzzleGudang();
+        break;
+
+    case 2:
+        puzzlePerpus();
+        break;
+
+    case 3:
+        puzzleLorong();
+        break;
+
+    default:
+        slowPrint("Pilihan tidak valid.\n", 75);
     }
 
-    puzzle(2);
-
-    char lihat;
-    printf("\nIngin melihat semua clue lagi? (y/n): ");
-    scanf(" %c", &lihat);
-    clearInputBuffer();
-    if (lihat == 'y' || lihat == 'Y') {
-        showClue();
-    }
+    promptShowClue();
 }
 
-void chapter3() {
-    setColor(11);
+void chapter3()
+{
+    setColor(13);
     printf("\n============== CHAPTER 3: KONFRONTASI ==============\n");
     resetColor();
 
-    slowPrint("Dari semua petunjuk, kamu menyatukan pola yang Johan tinggalkan.\n", 15);
-    slowPrint("Deret angka, nama Nina, dan koordinat tersembunyi di lampu-lampu kota.\n", 15);
+    slowPrint("Dari semua petunjuk, kamu menyatukan pola yang Johan tinggalkan.\n", 75);
+    slowPrint("Deret angka, nama Nina, dan koordinat tersembunyi di lampu-lampu kota.\n", 75);
 
-    slowPrint("Akhirnya, kamu menemukan sebuah kode besar yang mengarah ke satu titik: persembunyian Johan.\n\n", 15);
+    slowPrint("Akhirnya, kamu menemukan sebuah kode besar yang mengarah ke satu titik: persembunyian Johan.\n\n", 75);
 
     puzzle(3);
 
-    slowPrint("\nKamu dan Michael bergegas menuju lokasi yang ditunjukkan koordinat.\n", 15);
-    slowPrint("Namun saat tiba, ruangan itu kosong.\n", 15);
-    slowPrint("Yang tersisa hanya sebuah rekaman suara dan foto lama.\n\n", 15);
+    slowPrint("\nKamu dan Michael bergegas menuju lokasi yang ditunjukkan koordinat.\n", 75);
+    slowPrint("Namun saat tiba, ruangan itu kosong.\n", 75);
+    slowPrint("Yang tersisa hanya sebuah rekaman suara dan foto lama.\n\n", 75);
 
-    slowPrint("Rekaman Johan: \"Kebenaran selalu dekat denganmu, ", 20);
-    slowPrint(playerName, 20);
-    slowPrint(". Kau hanya belum melihatnya.\"\n", 20);
+    slowPrint("Rekaman Johan: \"Kebenaran selalu dekat denganmu, ", 100);
+    slowPrint(playerName, 75);
+    slowPrint(". Kau hanya belum melihatnya.\"\n", 100);
 
-    slowPrint("Kamu menemukan foto dirimu dan Nina saat kecil...\n", 15);
-    slowPrint("Di belakang foto, ada tanda tangan: 'Johan'.\n\n", 15);
+    slowPrint("Kamu menemukan foto dirimu dan Nina saat kecil...\n", 75);
+    slowPrint("Di belakang foto, ada tanda tangan: 'Johan'.\n\n", 75);
     addClue("Foto masa kecil dengan tanda tangan 'Johan' -> identitas Johan terkait langsung dengan Nina.");
 }
 
-void endingTrue() {
+void endingTrue()
+{
     setColor(10);
     printf("\n============== TRUE ENDING: 'THE GENIUS' ==============\n");
     resetColor();
 
-    slowPrint("Di ruangan tersembunyi berikutnya, kamu akhirnya bertemu sosok di balik nama 'Johan'.\n", 15);
-    slowPrint("Saat ia menoleh, jantungmu berhenti sejenak.\n", 15);
-    slowPrint("Itu adalah... Nina Fort, kakakmu sendiri.\n\n", 20);
+    slowPrint("Di ruangan tersembunyi berikutnya, kamu akhirnya bertemu sosok di balik nama 'Johan'.\n", 75);
+    slowPrint("Saat ia menoleh, jantungmu berhenti sejenak.\n", 75);
+    slowPrint("Itu adalah... Nina Fort, kakakmu sendiri.\n\n", 150);
 
-    slowPrint("Nina: \"Butuh waktu lama juga ya, ", 20);
-    slowPrint(playerName, 20);
-    slowPrint(".\"\n", 20);
+    slowPrint("Nina: \"Butuh waktu lama juga ya, ", 100);
+    slowPrint(playerName, 75);
+    slowPrint(".\"\n", 75);
 
-    slowPrint("Nina menjelaskan bahwa ia tidak mati.\n", 15);
-    slowPrint("Ia menghilang karena terlibat dalam eksperimen rahasia pemerintah di Graybridge.\n", 15);
-    slowPrint("Menggunakan nama sandi 'Johan', ia menciptakan rangkaian puzzle untuk menguji kejeniusannmu.\n\n", 15);
+    slowPrint("Nina menjelaskan bahwa ia tidak mati.\n", 75);
+    slowPrint("Ia menghilang karena terlibat dalam eksperimen rahasia pemerintah di Graybridge.\n", 75);
+    slowPrint("Menggunakan nama sandi 'Johan', ia menciptakan rangkaian puzzle untuk menguji kejeniusannmu.\n\n", 75);
 
-    slowPrint("\"Aku tidak ingin kau mati sebelum siap.\"\n", 20);
-    slowPrint("\"Semua ini hanya latihan sebelum kita membuka konspirasi yang jauh lebih besar.\"\n\n", 20);
+    slowPrint("\"Aku tidak ingin kau mati sebelum siap.\"\n", 75);
+    slowPrint("\"Semua ini hanya latihan sebelum kita membuka konspirasi yang jauh lebih besar.\"\n\n", 75);
 
-    slowPrint("Kamu menatap cahaya di ujung koridor, menyadari bahwa ini baru awal.\n", 15);
-    slowPrint("== TO BE CONTINUED ==\n", 40);
+    slowPrint("Kamu menatap cahaya di ujung koridor, menyadari bahwa ini baru awal.\n", 75);
+    setColor(12);
+    slowPrint("== TO BE CONTINUED ==\n", 75);
 }
 
-void endingFalse() {
+void endingFalse()
+{
     setColor(12);
     printf("\n============== FALSE ENDING: 'NOT ENOUGH' ==============\n");
     resetColor();
 
-    slowPrint("Kamu kembali ke ruangan persembunyian itu beberapa jam terlambat.\n", 15);
-    slowPrint("Ruangan sudah kosong. Tak ada rekaman, tak ada jejak.\n\n", 15);
+    slowPrint("Kamu kembali ke ruangan persembunyian itu beberapa jam terlambat.\n", 75);
+    slowPrint("Ruangan sudah kosong. Tak ada rekaman, tak ada jejak.\n\n", 75);
 
-    slowPrint("Di tengah ruangan hanya ada sebuah surat.\n\n", 15);
-    slowPrint("\"Sayang sekali. Kau tidak cukup layak. Graybridge butuh detektif yang lebih baik.\"\n", 20);
-    slowPrint("\"Jangan khawatir, permainan belum berakhir. Hanya saja bukan untukmu.\"\n\n", 20);
+    slowPrint("Di tengah ruangan hanya ada sebuah surat.\n\n", 75);
+    slowPrint("\"Sayang sekali. Kau tidak cukup layak. Graybridge butuh detektif yang lebih baik.\"\n", 100);
+    slowPrint("\"Jangan khawatir, permainan belum berakhir. Hanya saja bukan untukmu.\"\n\n", 100);
 
-    slowPrint("Johan menghilang. Kasus-kasus aneh tetap bermunculan di Graybridge.\n", 15);
-    slowPrint("Kamu gagal... dan rasa bersalah itu menghantuimu.\n\n", 15);
+    slowPrint("Johan menghilang. Kasus-kasus aneh tetap bermunculan di Graybridge.\n", 75);
+    slowPrint("Kamu gagal... dan rasa bersalah itu menghantuimu.\n\n", 75);
 
-    slowPrint("== BAD ENDING ==\n", 40);
+    setColor(12);
+    slowPrint("== BAD ENDING ==\n", 75);
 }
 
-int main() {
-    setColor(11);
+int main()
+{
+    setColor(13);
     printf("=====================================================\n");
     printf("                 THE GENIUS - TEXT GAME              \n");
     printf("            Tugas UAS Dasar-Dasar Pemrograman        \n");
@@ -321,13 +533,14 @@ int main() {
 
     inputNama();
 
-    slowPrint("\nSelamat datang di Graybridge, ", 15);
-    slowPrint(playerName, 15);
-    slowPrint(".\n", 15);
-    slowPrint("Kamu adalah detektif baru dengan masa lalu yang kelam...\n", 15);
+    slowPrint("\nSelamat datang di Graybridge, ", 75);
+    slowPrint(playerName, 75);
+    slowPrint(".\n", 75);
+    slowPrint("Kamu adalah detektif baru dengan masa lalu yang kelam...\n", 75);
 
     printf("\nTekan ENTER untuk memulai cerita...");
     getchar();
+    clearScreen();
 
     chapter1();
     chapter2();
@@ -338,12 +551,16 @@ int main() {
     printf("Puzzle gagal       : %d\n", failed);
     printf("======================================================\n");
 
-    if (solved == totalPuzzles) {
+    if (solved == totalPuzzles)
+    {
         endingTrue();
-    } else {
+    }
+    else
+    {
         endingFalse();
     }
 
+    setColor(14);
     printf("\nTerima kasih sudah memainkan 'The Genius'.\n");
     return 0;
 }
